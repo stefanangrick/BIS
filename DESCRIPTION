@@ -3,8 +3,7 @@ Type: Package
 Title: Programmatic Access to Bank for International Settlements Data
 Version: 0.3
 Authors@R: c(
-  person("Eric", "Persson", email = "expersso5@gmail.com",
-    role = c("aut")),
+  person("Eric", "Persson", role = c("aut")),
   person("Stefan", "Angrick", email = "contact@stefanangrick.net",
     role = c("cre"))
   )
