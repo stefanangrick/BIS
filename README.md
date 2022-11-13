@@ -1,99 +1,124 @@
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/BIS)](http://cran.r-project.org/package=BIS) [![Travis-CI Build Status](https://travis-ci.org/expersso/BIS.svg?branch=master)](https://travis-ci.org/expersso/BIS) [![Coverage Status](https://img.shields.io/codecov/c/github/expersso/BIS/master.svg)](https://codecov.io/github/expersso/BIS?branch=master) [![Cranlogs Downloads](http://cranlogs.r-pkg.org/badges/grand-total/BIS)](http://cran.r-project.org/package=BIS)
-
 BIS
-===
+================
 
-The `BIS` package package provides an `R` interface to data hosted by the [Bank for International Settlements](https://www.bis.org).
+The `BIS` package package provides an `R` interface to data hosted by
+the [Bank for International Settlements](https://www.bis.org),
+specifically the [single-file data
+sets](https://www.bis.org/statistics/full_data_sets.htm) available on
+the BIS homepage.
 
-The package can be installed from either CRAN or Github.
+## Install package
+
+The package can be installed from GitHub.
 
 ``` r
 library(devtools)
-install_github("expersso/BIS") # Github
-install.packages("BIS")        # CRAN
+install_github("stefanangrick/BIS")  # GitHub
 ```
 
-### Example usage
+## Example usage
 
-The `get_datasets` downloads a list of available datasets.
+To import data, first load the package:
 
 ``` r
-library(BIS)
+library("BIS")
+```
 
+Next, run the `get_datasets()` function to obtain a list of available
+data sets:
+
+``` r
 datasets <- get_datasets()
 head(datasets, 20)
-## # A tibble: 18 x 2
-##    name                                                     url           
-##    <chr>                                                    <chr>         
-##  1 Locational banking statistics                            https://www.b~
-##  2 Consolidated banking statistics                          https://www.b~
-##  3 Debt securities statistics                               https://www.b~
-##  4 Credit to the non-financial sector                       https://www.b~
-##  5 Credit-to-GDP gaps                                       https://www.b~
-##  6 Debt service ratios for the private non-financial sector https://www.b~
-##  7 Global liquidity indicators                              https://www.b~
-##  8 OTC derivatives outstanding                              https://www.b~
-##  9 US dollar exchange rates (monthly, quarterly and annual) https://www.b~
-## 10 US dollar exchange rates (daily)                         https://www.b~
-## 11 Effective exchange rate indices (monthly)                https://www.b~
-## 12 Effective exchange rate indices (daily)                  https://www.b~
-## 13 Triennial Survey statistics on turnover                  https://www.b~
-## 14 Property prices: selected series                         https://www.b~
-## 15 Property prices: long series                             https://www.b~
-## 16 Consumer prices                                          https://www.b~
-## 17 Policy rates (monthly)                                   https://www.b~
-## 18 Policy rates (daily)                                     https://www.b~
 ```
 
-The function `get_bis` takes a url as input and downloads and parses the corresponding CSV file from the BIS website. This automatic parsing of the data is the major contribution of this package, since the different CSVs follow different formats.
+    ## # A tibble: 20 × 3
+    ##    name                                                          id        url  
+    ##    <chr>                                                         <chr>     <chr>
+    ##  1 Locational banking statistics                                 full_lbs… http…
+    ##  2 Consolidated banking statistics                               full_cbs… http…
+    ##  3 Debt securities statistics                                    full_deb… http…
+    ##  4 Credit to the non-financial sector                            full_tc_… http…
+    ##  5 Credit-to-GDP gaps                                            full_cre… http…
+    ##  6 Debt service ratios for the private non-financial sector      full_dsr… http…
+    ##  7 Global liquidity indicators                                   full_gli… http…
+    ##  8 Exchange-traded derivatives statistics                        full_xtd… http…
+    ##  9 OTC derivatives outstanding                                   full_otc… http…
+    ## 10 US dollar exchange rates (monthly, quarterly and annual)      full_xru… http…
+    ## 11 US dollar exchange rates (daily, horizontal time axis)        full_xru… http…
+    ## 12 US dollar exchange rates (daily, vertical time axis)          full_xru… http…
+    ## 13 Effective exchange rate indices (monthly)                     full_eer… http…
+    ## 14 Effective exchange rate indices (daily, horizontal time axis) full_eer… http…
+    ## 15 Effective exchange rate indices (daily, vertical time axis)   full_eer… http…
+    ## 16 Triennial Survey statistics on turnover                       full_der… http…
+    ## 17 Property prices: selected series                              full_spp… http…
+    ## 18 Property prices: long series                                  full_bis… http…
+    ## 19 Payments and financial market infrastructures statistics      full_bis… http…
+    ## 20 Consumer prices                                               full_lon… http…
 
-The following code loads monthly data on central banks' policy rates:
+The `get_datasets()` function returns a
+[tibble](https://tibble.tidyverse.org/) data frame listing the available
+data sets. The column `url` can be used as input for the `get_bis()`
+function which downloads, parses and imports the corresponding data set.
+
+To import monthly-frequency data on [central banks’ policy
+rates](https://www.bis.org/statistics/cbpol.htm), run:
 
 ``` r
-rates <- get_bis(datasets$url[datasets$name == "Policy rates (monthly)"], quiet = TRUE)
+rates <- get_bis(datasets$url[datasets$id == "full_cbpol_m_csv"])
 head(rates)
-## # A tibble: 6 x 6
-##   freq  frequency ref_area reference_area date    obs_value
-##   <chr> <chr>     <chr>    <chr>          <chr>       <dbl>
-## 1 M     Monthly   CH       Switzerland    1946-01      1.50
-## 2 M     Monthly   DK       Denmark        1946-01      3.50
-## 3 M     Monthly   GB       United Kingdom 1946-01      2.00
-## 4 M     Monthly   IN       India          1946-01      3.00
-## 5 M     Monthly   JP       Japan          1946-01      3.29
-## 6 M     Monthly   SE       Sweden         1946-01      2.50
 ```
 
-We plot these data for a subset of countries.
+    ## # A tibble: 6 × 15
+    ##   freq  freque…¹ ref_a…² refer…³ time_…⁴ time_…⁵ compi…⁶ decim…⁷ decim…⁸ sourc…⁹
+    ##   <chr> <chr>    <chr>   <chr>   <chr>   <chr>   <chr>   <chr>   <chr>   <chr>  
+    ## 1 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## 2 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## 3 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## 4 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## 5 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## 6 M     Monthly  AR      Argent… <NA>    <NA>    From 0… 4       Four    Centra…
+    ## # … with 5 more variables: supp_info_breaks <chr>, title <chr>, series <chr>,
+    ## #   date <chr>, obs_value <dbl>, and abbreviated variable names ¹​frequency,
+    ## #   ²​ref_area, ³​reference_area, ⁴​time_format, ⁵​time_format.1, ⁶​compilation,
+    ## #   ⁷​decimals, ⁸​decimals.1, ⁹​source_ref
+
+Parsing may fail if the amount of available memory is insufficient for
+executing the necessary pivot operation. This is the case with large
+data sets in particular (e.g. the Locational banking statistics and Debt
+securities statistics). As a workaround, users may wish to set
+`auto_pivot = FALSE` when calling `get_bis()`, then subset the data and
+run `pivot_longer_bis()` manually. See `??get_bis` for an example.
+
+To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the
+following:
 
 ``` r
-library(dplyr)
-library(ggplot2)
-library(zoo)
+library("dplyr")
+library("ggplot2")
+library("zoo")
 
-rates_plot <- rates %>%
-  mutate(date = as.Date(as.yearmon(date))) %>%
-  filter(grepl("^(XM|US|CH|JP|GB|CA)", ref_area))
+rates_plot <- subset(rates, ref_area %in% c("US", "XM", "JP", "GB", "CH", "CA"))
+rates_plot <- mutate(rates_plot, date = as.Date(as.yearmon(date, format = "%Y-%m")))
 
 ggplot(rates_plot, aes(date, obs_value, color = reference_area)) +
-  geom_hline(yintercept = 0, linetype = "dashed",
-             color = "grey70", size = 0.02) +
   geom_line(show.legend = FALSE) +
   facet_wrap(~reference_area) +
-  theme_light() +
-  theme(panel.grid = element_blank()) +
-  labs(x = NULL, y = NULL,
-       title = "Central bank policy rates",
-       subtitle = "% per annum")
+  labs(title = "Central bank policy rates",
+       subtitle = "% per annum", x = NULL, y = NULL)
 ```
 
-![](README-plot-1.png)
+![](README_files/figure-gfm/plot-1.png)<!-- -->
 
-Note that the BIS data sets come with a number of different time formats, so it's up to the user to parse these for himself/herself. The `zoo` package (especially `as.yearqtr` and `as.yearmon`) should take care of most cases.
+Note that BIS data sets come with a number of different time formats.
+The [zoo](https://cran.r-project.org/package=zoo) package
+(e.g. `as.yearmon()`) should be able to parse most formats.
 
-Please also note that some datasets are fairly large (especially the first three returned by `get_datasets`), so you may need to run 64-bit R in order to load all the data into memory.
+## Disclaimer
 
-Finally, please don't abuse BIS's servers with unnecessary calls.
-
-### Disclaimer
-
-This package is in no way officially related to, or endorsed by, the BIS.
+This package is in no way officially related to or endorsed by the [Bank
+for International Settlements](https://www.bis.org/). It’s based on a
+fork of
+[CC0](https://cran.r-project.org/src/contrib/Archive/BIS/)-licensed
+[code by expersso](https://github.com/expersso/BIS). Please don’t abuse
+the BIS’s servers with unnecessary calls.
