@@ -17,7 +17,7 @@ A tibble data frame.
 Download and parse a list of available BIS data sets
 }
 \examples{
-\dontrun{
-datasets <- get_datasets()
+\donttest{
+ds <- get_datasets()
 }
 }

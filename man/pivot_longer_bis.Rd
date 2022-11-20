@@ -17,10 +17,10 @@ A tibble data frame.
 Convert a BIS data set to long format
 }
 \examples{
-\dontrun{
-options(timeout = 600)
-lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-lbs <- subset(lbs, l_parent_cty \%in\% c("US", "DE", "JP"))
-lbs <- pivot_longer_bis(lbs)
+\donttest{
+ds    <- get_datasets()
+rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"], auto_pivot = FALSE)
+rates <- subset(rates, ref_area \%in\% c("US", "DE", "JP"))
+rates <- pivot_longer_bis(rates)
 }
 }

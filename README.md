@@ -28,8 +28,8 @@ Next, run the `get_datasets()` function to obtain a list of available
 data sets:
 
 ``` r
-datasets <- get_datasets()
-head(datasets, 20)
+ds <- get_datasets()
+head(ds, 20)
 ```
 
     ## # A tibble: 20 × 3
@@ -65,7 +65,7 @@ To import monthly-frequency data on [central banks’ policy
 rates](https://www.bis.org/statistics/cbpol.htm), run:
 
 ``` r
-rates <- get_bis(datasets$url[datasets$id == "full_cbpol_m_csv"])
+rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
 head(rates)
 ```
 
@@ -82,13 +82,6 @@ head(rates)
     ## #   date <chr>, obs_value <dbl>, and abbreviated variable names ¹​frequency,
     ## #   ²​ref_area, ³​reference_area, ⁴​time_format, ⁵​time_format.1, ⁶​compilation,
     ## #   ⁷​decimals, ⁸​decimals.1, ⁹​source_ref
-
-Parsing may fail if the amount of available memory is insufficient for
-executing the necessary pivot operation. This is the case with large
-data sets in particular (e.g. the Locational banking statistics and Debt
-securities statistics). As a workaround, users may wish to set
-`auto_pivot = FALSE` when calling `get_bis()`, then subset the data and
-run `pivot_longer_bis()` manually. See `??get_bis` for an example.
 
 To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the
 following:
@@ -114,7 +107,32 @@ Note that BIS data sets come with a number of different time formats.
 The [zoo](https://cran.r-project.org/package=zoo) package
 (e.g. `as.yearmon()`) should be able to parse most formats.
 
-## Disclaimer
+## Large data sets
+
+Large data sets (e.g. the Locational banking statistics and Debt
+securities statistics) may cause `get_bis()` to fail if the amount of
+available memory is insufficient for executing a required pivot
+operation. As a workaround, users may wish to set `auto_pivot = FALSE`
+when calling `get_bis()`, then subset the data and run
+`pivot_longer_bis()` manually.
+
+``` r
+options(timeout = 600)
+lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
+lbs <- subset(lbs, l_parent_cty %in% c("US", "DE", "JP"))
+lbs <- pivot_longer_bis(lbs)
+```
+
+## Retrieve individual data series
+
+To retrieve individual data series instead of full data sets, consider
+using the BIS [SDMX RESTful API](https://stats.bis.org/api-doc/v1/#/).
+The [rsdmx R package](https://cran.r-project.org/package=rsdmx) is able
+to process SDMX data within R. The latest rsdmx [development
+version](https://github.com/opensdmx/rsdmx) contains a BIS connector
+that streamlines the process.
+
+## Note
 
 This package is in no way officially related to or endorsed by the [Bank
 for International Settlements](https://www.bis.org/). It’s based on a

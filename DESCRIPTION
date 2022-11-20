@@ -1,7 +1,7 @@
 Package: BIS
 Type: Package
 Title: Programmatic Access to Bank for International Settlements Data
-Version: 0.3
+Version: 0.3.1
 Authors@R: c(
   person("Eric", "Persson", role = c("aut")),
   person("Stefan", "Angrick", email = "contact@stefanangrick.net",

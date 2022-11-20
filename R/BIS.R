@@ -1,10 +1,5 @@
 if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
 
-# Increase timeout for download.files on load
-.onLoad <- function(libname, pkgname) {
-  options(timeout = max(300, getOption("timeout")))
-}
-
 # Clean names
 .clean_names <- function(x) {
   x <- make.unique(tolower(trimws(gsub("[[:space:]]", "_", x))))
@@ -14,6 +9,15 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
 
 # Download a file
 .download_file <- function(url, ...) {
+  # Save user options
+  old_options <- options()
+
+  # Restore user options on function exit
+  on.exit(options(old_options))
+
+  # Force minimum timeout of 300 for file download
+  options(timeout = max(300, getOption("timeout")))
+
   path <- tryCatch({
     # Prepare temp file
     tmp_file <- tempfile(fileext = ".zip")
@@ -73,11 +77,11 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' options(timeout = 600)
-#' lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-#' lbs <- subset(lbs, l_parent_cty %in% c("US", "DE", "JP"))
-#' lbs <- pivot_longer_bis(lbs)
+#' \donttest{
+#' ds    <- get_datasets()
+#' rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"], auto_pivot = FALSE)
+#' rates <- subset(rates, ref_area %in% c("US", "DE", "JP"))
+#' rates <- pivot_longer_bis(rates)
 #' }
 pivot_longer_bis <- function(tbl) {
   excl_cols <- grep("^[0-9]", names(tbl), invert = TRUE, value = TRUE)
@@ -159,8 +163,8 @@ pivot_longer_bis <- function(tbl) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' datasets <- get_datasets()
+#' \donttest{
+#' ds <- get_datasets()
 #' }
 get_datasets <- function(
     base_url = "https://www.bis.org/statistics/full_data_sets.htm") {
@@ -225,23 +229,16 @@ get_datasets <- function(
 #' the source zip file contains multiple csv files.
 #' @export
 #'
-#' @details Parsing may fail if the amount of available memory is insufficient
-#' for executing the necessary pivot operation. This is the case with large data
-#' sets in particular. As a workaround, users may wish to set
-#' \code{auto_pivot = FALSE} when calling \code{get_bis()}, then subset the
-#' data and run \code{pivot_longer_bis()} manually. See example 2 below.
+#' @details Large data sets may cause \code{get_bis()} to fail if the amount of
+#' available memory is insufficient for executing a required pivot operation. As
+#' a workaround, users may wish to set \code{auto_pivot = FALSE} when calling
+#' \code{get_bis()}, then subset the data and run \code{pivot_longer_bis()}
+#' manually. See the vignette for detail.
 #'
 #' @examples
-#' \dontrun{
-#' # Example 1
+#' \donttest{
 #' ds <- get_datasets()
 #' df <- get_bis(ds$url[2])
-#'
-#' # Example 2
-#' options(timeout = 600)
-#' lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-#' lbs <- subset(lbs, l_parent_cty %in% c("US", "DE", "JP"))
-#' lbs <- pivot_longer_bis(lbs)
 #' }
 get_bis <- function(url, auto_pivot = TRUE, ...) {
   try(zip_file_path <- .download_file(url, ...), TRUE)

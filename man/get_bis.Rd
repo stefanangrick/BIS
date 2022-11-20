@@ -24,22 +24,15 @@ the source zip file contains multiple csv files.
 Download and parse a BIS data set
 }
 \details{
-Parsing may fail if the amount of available memory is insufficient
-for executing the necessary pivot operation. This is the case with large data
-sets in particular. As a workaround, users may wish to set
-\code{auto_pivot = FALSE} when calling \code{get_bis()}, then subset the
-data and run \code{pivot_longer_bis()} manually. See example 2 below.
+Large data sets may cause \code{get_bis()} to fail if the amount of
+available memory is insufficient for executing a required pivot operation. As
+a workaround, users may wish to set \code{auto_pivot = FALSE} when calling
+\code{get_bis()}, then subset the data and run \code{pivot_longer_bis()}
+manually. See the vignette for detail.
 }
 \examples{
-\dontrun{
-# Example 1
+\donttest{
 ds <- get_datasets()
 df <- get_bis(ds$url[2])
-
-# Example 2
-options(timeout = 600)
-lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-lbs <- subset(lbs, l_parent_cty \%in\% c("US", "DE", "JP"))
-lbs <- pivot_longer_bis(lbs)
 }
 }
