@@ -1,6 +1,10 @@
 BIS
 ================
 
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/BIS)](http://cran.r-project.org/package=BIS)
+[![Cranlogs
+Downloads](http://cranlogs.r-pkg.org/badges/grand-total/BIS)](http://cran.r-project.org/package=BIS)
+
 The `BIS` package package provides an `R` interface to data hosted by
 the [Bank for International Settlements](https://www.bis.org),
 specifically the [single-file data
@@ -9,23 +13,24 @@ the BIS homepage.
 
 ## Install package
 
-The package can be installed from GitHub.
+The package can be installed from CRAN or Github.
 
 ``` r
 library(devtools)
 install_github("stefanangrick/BIS")  # GitHub
+install.packages("BIS")              # CRAN
 ```
 
 ## Example usage
 
-To import data, first load the package:
+To import data, first load the package.
 
 ``` r
 library("BIS")
 ```
 
 Next, run the `get_datasets()` function to obtain a list of available
-data sets:
+data sets.
 
 ``` r
 ds <- get_datasets()
@@ -62,7 +67,7 @@ data sets. The column `url` can be used as input for the `get_bis()`
 function which downloads, parses and imports the corresponding data set.
 
 To import monthly-frequency data on [central banks’ policy
-rates](https://www.bis.org/statistics/cbpol.htm), run:
+rates](https://www.bis.org/statistics/cbpol.htm), run the below.
 
 ``` r
 rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
@@ -84,7 +89,7 @@ head(rates)
     ## #   ⁷​decimals, ⁸​decimals.1, ⁹​source_ref
 
 To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the
-following:
+below.
 
 ``` r
 library("dplyr")

@@ -8,7 +8,7 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
 }
 
 # Download a file
-.download_file <- function(url, ...) {
+.download_file <- function(file_url, ...) {
   # Save user options
   old_options <- options()
 
@@ -18,20 +18,22 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
   # Force minimum timeout of 300 for file download
   options(timeout = max(300, getOption("timeout")))
 
-  path <- tryCatch({
+  file_path <- tryCatch({
     # Prepare temp file
-    tmp_file <- tempfile(fileext = ".zip")
+    file_ext <- tools::file_ext(file_url)
+    file_ext <- ifelse(file_ext == "", "", paste0(".", file_ext))
+    tmp_file <- tempfile(fileext = file_ext)
 
     # Download data and store in temp file
-    utils::download.file(url, tmp_file, mode = "wb", ...)
+    utils::download.file(file_url, tmp_file, mode = "wb")
 
     # Return path to temp tile
-    path <- tmp_file
+    file_path <- tmp_file
 
-    path
+    file_path
   },
   error = function(x) {
-    message(paste("Unable to download file:", url))
+    message(paste("Unable to download file:", file_url))
     message("The resource is unavailable or has changed.")
     message("To download large files, try increasing the download timeout:")
     message("options(timeout = 600)")
@@ -40,7 +42,7 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
     return(NA)
   },
   warning = function(x) {
-    message(paste("Unable to download file:", url))
+    message(paste("Unable to download file:", file_url))
     message("The resource is unavailable or has changed.")
     message("To download large files, try increasing the download timeout:")
     message("options(timeout = 600)")
@@ -50,28 +52,28 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
   }
   )
 
-  return(path)
+  return(file_path)
 }
 
 # Unzip a file
-.unzip_file <- function(path) {
+.unzip_file <- function(archive_path) {
   # Prepare temp dir
   tmp_dir <- tempdir()
 
   # Unpack zip file
-  filename <- utils::unzip(path, list = TRUE)
-  utils::unzip(path, exdir = tmp_dir)
+  file_name <- utils::unzip(archive_path, list = TRUE)
+  utils::unzip(archive_path, exdir = tmp_dir)
 
   # Get path(s) to csv file(s)
-  path <- file.path(tmp_dir, filename$Name)
+  file_path <- file.path(tmp_dir, file_name$Name)
 
-  return(path)
+  return(file_path)
 }
 
 #' Convert a BIS data set to long format
 #'
 #' @param tbl Tibble. A tibble data frame containing a BIS data set (usually
-#' obtained via \code{get_bis(url, auto_pivot = FALSE)}).
+#' obtained via \code{get_bis(item_url, auto_pivot = FALSE)}).
 #'
 #' @return A tibble data frame.
 #' @export
@@ -93,20 +95,20 @@ pivot_longer_bis <- function(tbl) {
 }
 
 # Parse a BIS data set
-.parse_bis <- function(path, url, auto_pivot = TRUE) {
+.parse_bis <- function(file_path, item_url, auto_pivot) {
   # Get file name
-  file_name <- tools::file_path_sans_ext(basename(url))
+  file_name <- tools::file_path_sans_ext(basename(item_url))
 
   # Read data into a list of tibble data frames
   tbl <- list()
   i   <- 0
 
   # One tibble data frame per file
-  while (i < length(path)) {
+  while (i < length(file_path)) {
     i <- i + 1
 
     # Read data into tibble data frame
-    tbl[[i]] <- readr::read_csv(path[[i]], col_names = FALSE,
+    tbl[[i]] <- readr::read_csv(file_path[[i]], col_names = FALSE,
                                 show_col_types = FALSE,
                                 na = c("", "NA", "NaN"),
                                 col_types = readr::cols(.default = "c"))
@@ -132,13 +134,13 @@ pivot_longer_bis <- function(tbl) {
     names(tbl[[i]]) <- .clean_names(nms)
     tbl[[i]]        <- tbl[[i]][-1, ]
 
-    # Pivot data from wide to long
+    # Pivot data from wide to long format
     if (auto_pivot) {
       tbl[[i]] <- pivot_longer_bis(tbl[[i]])
     }
 
     # Add name to list item
-    names(tbl)[[i]] <- tools::file_path_sans_ext(basename(path))[[i]]
+    names(tbl)[[i]] <- tools::file_path_sans_ext(basename(file_path))[[i]]
 
     # Check for successful parsing
     if (nrow(tbl[[i]]) == 0) {
@@ -218,8 +220,8 @@ get_datasets <- function(
 
 #' Download and parse a BIS data set
 #'
-#' @param url Character. URL of the data set to be imported (usually obtained
-#' through \code{get_datasets()}).
+#' @param item_url Character. URL of the data set to be imported (usually
+#' obtained through \code{get_datasets()}).
 #' @param auto_pivot Logical. Controls whether source data set is converted to
 #' long format. Set this to \code{FALSE} to disable conversion (default: TRUE).
 #' @param ... Arguments passed to \code{download.file()} (e.g.
@@ -237,14 +239,11 @@ get_datasets <- function(
 #'
 #' @examples
 #' \donttest{
-#' ds <- get_datasets()
-#' df <- get_bis(ds$url[2])
+#' ds    <- get_datasets()
+#' rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
 #' }
-get_bis <- function(url, auto_pivot = TRUE, ...) {
-  try(zip_file_path <- .download_file(url, ...), TRUE)
+get_bis <- function(item_url, auto_pivot = TRUE, ...) {
+  try(zip_file_path <- .download_file(item_url, ...), TRUE)
   try(csv_file_path <- .unzip_file(zip_file_path), TRUE)
-  try(return(.parse_bis(csv_file_path,
-                        url = url,
-                        auto_pivot = auto_pivot)),
-      TRUE)
+  try(return(.parse_bis(csv_file_path, item_url, auto_pivot)), TRUE)
 }

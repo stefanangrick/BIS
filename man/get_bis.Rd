@@ -4,11 +4,11 @@
 \alias{get_bis}
 \title{Download and parse a BIS data set}
 \usage{
-get_bis(url, auto_pivot = TRUE, ...)
+get_bis(item_url, auto_pivot = TRUE, ...)
 }
 \arguments{
-\item{url}{Character. URL of the data set to be imported (usually obtained
-through \code{get_datasets()}).}
+\item{item_url}{Character. URL of the data set to be imported (usually
+obtained through \code{get_datasets()}).}
 
 \item{auto_pivot}{Logical. Controls whether source data set is converted to
 long format. Set this to \code{FALSE} to disable conversion (default: TRUE).}
@@ -32,7 +32,7 @@ manually. See the vignette for detail.
 }
 \examples{
 \donttest{
-ds <- get_datasets()
-df <- get_bis(ds$url[2])
+ds    <- get_datasets()
+rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
 }
 }

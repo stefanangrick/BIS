@@ -13,22 +13,23 @@ The `BIS` package package provides an `R` interface to data hosted by the [Bank 
 
 ## Install package
 
-The package can be installed from GitHub.
+The package can be installed from CRAN or Github.
 
 ```{r install, eval=FALSE, message=FALSE, warning=FALSE}
 library(devtools)
 install_github("stefanangrick/BIS")  # GitHub
+install.packages("BIS")              # CRAN
 ```
 
 ## Example usage
 
-To import data, first load the package:
+To import data, first load the package.
 
 ```{r loading, message=FALSE, warning=FALSE}
 library("BIS")
 ```
 
-Next, run the `get_datasets()` function to obtain a list of available data sets:
+Next, run the `get_datasets()` function to obtain a list of available data sets.
 
 ```{r datasets, message=FALSE, warning=FALSE}
 ds <- get_datasets()
@@ -37,14 +38,14 @@ head(ds, 20)
 
 The `get_datasets()` function returns a [tibble](https://tibble.tidyverse.org/) data frame listing the available data sets. The column `url` can be used as input for the `get_bis()` function which downloads, parses and imports the corresponding data set.
 
-To import monthly-frequency data on [central banks' policy rates](https://www.bis.org/statistics/cbpol.htm), run:
+To import monthly-frequency data on [central banks' policy rates](https://www.bis.org/statistics/cbpol.htm), run the below.
 
 ```{r rates, message=FALSE, warning=FALSE}
 rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
 head(rates)
 ```
 
-To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the following:
+To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the below.
 
 ```{r plot, message=FALSE, warning=FALSE}
 library("dplyr")

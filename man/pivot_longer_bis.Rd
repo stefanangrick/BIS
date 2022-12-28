@@ -8,7 +8,7 @@ pivot_longer_bis(tbl)
 }
 \arguments{
 \item{tbl}{Tibble. A tibble data frame containing a BIS data set (usually
-obtained via \code{get_bis(url, auto_pivot = FALSE)}).}
+obtained via \code{get_bis(item_url, auto_pivot = FALSE)}).}
 }
 \value{
 A tibble data frame.

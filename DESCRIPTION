@@ -1,7 +1,7 @@
 Package: BIS
 Type: Package
 Title: Programmatic Access to Bank for International Settlements Data
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(
   person("Eric", "Persson", role = c("aut")),
   person("Stefan", "Angrick", email = "contact@stefanangrick.net",
@@ -11,7 +11,7 @@ Description: Provides an interface to data provided by the Bank for
   International Settlements <https://www.bis.org>, allowing for programmatic
   retrieval of a large quantity of (central) banking data.
 License: CC0
-URL: https://www.bis.org
+URL: https://github.com/stefanangrick/BIS
 BugReports: https://github.com/stefanangrick/BIS/issues
 Suggests:
     knitr,
@@ -19,7 +19,7 @@ Suggests:
     ggplot2,
     zoo
 Imports:
-    dplyr, 
+    dplyr,
     readr,
     tidyr,
     tidyselect,
@@ -27,4 +27,4 @@ Imports:
     xml2
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
