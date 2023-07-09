@@ -2,11 +2,11 @@
 title: "BIS"
 author: "Stefan Angrick"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{BIS}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_vignette
 ---
 
 The `BIS` package package provides an `R` interface to data hosted by the [Bank for International Settlements](https://www.bis.org), specifically the [single-file data sets](https://www.bis.org/statistics/full_data_sets.htm) available on the BIS homepage.
@@ -25,13 +25,13 @@ install.packages("BIS")              # CRAN
 
 To import data, first load the package.
 
-```{r loading, message=FALSE, warning=FALSE}
+```{r loading, eval=FALSE, message=FALSE, warning=FALSE}
 library("BIS")
 ```
 
 Next, run the `get_datasets()` function to obtain a list of available data sets.
 
-```{r datasets, message=FALSE, warning=FALSE}
+```{r datasets, eval=FALSE, message=FALSE, warning=FALSE}
 ds <- get_datasets()
 head(ds, 20)
 ```
@@ -40,14 +40,14 @@ The `get_datasets()` function returns a [tibble](https://tibble.tidyverse.org/) 
 
 To import monthly-frequency data on [central banks' policy rates](https://www.bis.org/statistics/cbpol.htm), run the below.
 
-```{r rates, message=FALSE, warning=FALSE}
+```{r rates, eval=FALSE, message=FALSE, warning=FALSE}
 rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
 head(rates)
 ```
 
 To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the below.
 
-```{r plot, message=FALSE, warning=FALSE}
+```{r plot, eval=FALSE, message=FALSE, warning=FALSE}
 library("dplyr")
 library("ggplot2")
 library("zoo")
