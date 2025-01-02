@@ -1,13 +1,15 @@
 if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
 
-# Clean names
+# Standardise column names
 .clean_names <- function(x) {
-  x <- make.unique(tolower(trimws(gsub("[[:space:]]", "_", x))))
+  x <- make.unique(
+    tolower(trimws(gsub("[[:space:]]", "_", sub(":.*$", "", x))))
+  )
 
   return(x)
 }
 
-# Download a file
+# Download a file from a given URL
 .download_file <- function(file_url, ...) {
   # Save user options
   old_options <- options()
@@ -55,7 +57,7 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
   return(file_path)
 }
 
-# Unzip a file
+# Extract the contents of a zip file
 .unzip_file <- function(archive_path) {
   # Prepare temp dir
   tmp_dir <- tempdir()
@@ -70,93 +72,39 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("obs_value"))
   return(file_path)
 }
 
-#' Convert a BIS data set to long format
+#' Read a BIS data set from a local file
 #'
-#' @param tbl Tibble. A tibble data frame containing a BIS data set (usually
-#' obtained via \code{get_bis(item_url, auto_pivot = FALSE)}).
+#' @param file_path Character. Path to the CSV file to be read (usually obtained
+#' via manual download from the BIS homepage).
 #'
 #' @return A tibble data frame.
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' ds    <- get_datasets()
-#' rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"], auto_pivot = FALSE)
-#' rates <- subset(rates, ref_area %in% c("US", "DE", "JP"))
-#' rates <- pivot_longer_bis(rates)
+#' \dontrun{
+#' # Example 1: Read a locally stored CSV
+#' df <- read_bis("WS_CBPOL_csv_flat.csv")
+#'
+#' # Example 2: Read a locally stored ZIP
+#' df <- read_bis(.unzip_file("WS_CBPOL_csv_flat.zip"))
 #' }
-pivot_longer_bis <- function(tbl) {
-  excl_cols <- grep("^[0-9]", names(tbl), invert = TRUE, value = TRUE)
-  tbl <- tidyr::pivot_longer(data = tbl, cols = -tidyselect::all_of(excl_cols),
-                             names_to = "date", values_to = "obs_value")
+#'
+read_bis <- function(file_path) {
+  # Read data into tibble data frame
+  tbl <- readr::read_csv(file_path, col_names = TRUE, show_col_types = FALSE,
+                         na = c("", "NA", "NaN"),
+                         col_types = readr::cols(.default = "c"))
+
+  # Set column names
+  names(tbl) <- .clean_names(names(tbl))
+
+  # Convert observations to numeric
   tbl <- dplyr::mutate(tbl, obs_value = as.numeric(obs_value))
 
   return(tbl)
 }
 
-# Parse a BIS data set
-.parse_bis <- function(file_path, item_url, auto_pivot) {
-  # Get file name
-  file_name <- tools::file_path_sans_ext(basename(item_url))
-
-  # Read data into a list of tibble data frames
-  tbl <- list()
-  i   <- 0
-
-  # One tibble data frame per file
-  while (i < length(file_path)) {
-    i <- i + 1
-
-    # Read data into tibble data frame
-    tbl[[i]] <- readr::read_csv(file_path[[i]], col_names = FALSE,
-                                show_col_types = FALSE,
-                                na = c("", "NA", "NaN"),
-                                col_types = readr::cols(.default = "c"))
-
-    # Transpose daily data
-    if (is.element(file_name, c("full_xru_d_csv_row", "full_cbpol_d_csv_row",
-                                "full_eer_d_csv_row"))) {
-      tbl[[i]] <- as.data.frame(t(tbl[[i]]))
-      tbl[[i]] <- dplyr::as_tibble(tbl[[i]])
-    }
-
-    # Set column names
-    nms <- as.character(tbl[[i]][1, ])
-
-    # Fix non-unique names
-    if (file_name == "full_bis_rb_csv") {
-      if (any(grep("^sts.*", nms))) {
-        sts_cols      <- grep("^sts.*", nms)
-        nms[sts_cols] <- paste0("sts", nms[sts_cols - 1])
-      }
-    }
-
-    names(tbl[[i]]) <- .clean_names(nms)
-    tbl[[i]]        <- tbl[[i]][-1, ]
-
-    # Pivot data from wide to long format
-    if (auto_pivot) {
-      tbl[[i]] <- pivot_longer_bis(tbl[[i]])
-    }
-
-    # Add name to list item
-    names(tbl)[[i]] <- tools::file_path_sans_ext(basename(file_path))[[i]]
-
-    # Check for successful parsing
-    if (nrow(tbl[[i]]) == 0) {
-      message(paste("Unable to parse file:", file_name))
-    }
-  }
-
-  # If there is only one tibble data frame, return as single object
-  if (length(tbl) < 2) {
-    tbl <- tbl[[1]]
-  }
-
-  return(tbl)
-}
-
-#' Download and parse a list of available BIS data sets
+#' Retrieve a list of available BIS data sets
 #'
 #' @param base_url Character. URL of the BIS's homepage listing single file data
 #' sets for download (optional).
@@ -169,7 +117,7 @@ pivot_longer_bis <- function(tbl) {
 #' ds <- get_datasets()
 #' }
 get_datasets <- function(
-    base_url = "https://www.bis.org/statistics/full_data_sets.htm") {
+    base_url = "https://data.bis.org/bulkdownload") {
   tbl <- tryCatch({
     # Download webpage
     page  <- xml2::read_html(base_url)
@@ -178,14 +126,15 @@ get_datasets <- function(
     # Parse homepage: Get name, id, url
     item_name <- rvest::html_text(nodes)
     item_id   <- tools::file_path_sans_ext(
-      basename(rvest::html_attr(nodes, "href")))
+      basename(rvest::html_attr(nodes, "href"))
+    )
     item_url  <- xml2::url_absolute(rvest::html_attr(nodes, "href"), base_url)
 
-    # Omit items with SDMX data
-    sdmx_items <- which(item_id == "full_bis_rb_sdmx_ml21")
-    item_name  <- item_name[-sdmx_items]
-    item_id    <- item_id[-sdmx_items]
-    item_url   <- item_url[-sdmx_items]
+    # Keep only the flat items
+    flat_items <- grep(".*flat.*", item_name)
+    item_name  <- item_name[flat_items]
+    item_id    <- item_id[flat_items]
+    item_url   <- item_url[flat_items]
 
     # Return tibble data frame
     tbl <- dplyr::tibble(name = item_name,
@@ -221,29 +170,20 @@ get_datasets <- function(
 #' Download and parse a BIS data set
 #'
 #' @param item_url Character. URL of the data set to be imported (usually
-#' obtained through \code{get_datasets()}).
-#' @param auto_pivot Logical. Controls whether source data set is converted to
-#' long format. Set this to \code{FALSE} to disable conversion (default: TRUE).
+#' obtained via \code{get_datasets()}).
 #' @param ... Arguments passed to \code{download.file()} (e.g.
 #' \code{quiet = TRUE}).
 #'
-#' @return A tibble data frame, or a list of tibble data frames in cases where
-#' the source zip file contains multiple csv files.
+#' @return A tibble data frame.
 #' @export
-#'
-#' @details Large data sets may cause \code{get_bis()} to fail if the amount of
-#' available memory is insufficient for executing a required pivot operation. As
-#' a workaround, users may wish to set \code{auto_pivot = FALSE} when calling
-#' \code{get_bis()}, then subset the data and run \code{pivot_longer_bis()}
-#' manually. See the vignette for detail.
 #'
 #' @examples
 #' \donttest{
-#' ds    <- get_datasets()
-#' rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
+#' ds <- get_datasets()
+#' df <- get_bis(ds$url[ds$id == "WS_CBPOL_csv_flat"])
 #' }
-get_bis <- function(item_url, auto_pivot = TRUE, ...) {
+get_bis <- function(item_url, ...) {
   try(zip_file_path <- .download_file(item_url, ...), TRUE)
   try(csv_file_path <- .unzip_file(zip_file_path), TRUE)
-  try(return(.parse_bis(csv_file_path, item_url, auto_pivot)), TRUE)
+  try(return(read_bis(csv_file_path)), TRUE)
 }

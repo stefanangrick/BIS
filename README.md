@@ -5,15 +5,15 @@ BIS
 [![Cranlogs
 Downloads](http://cranlogs.r-pkg.org/badges/grand-total/BIS)](http://cran.r-project.org/package=BIS)
 
-The `BIS` package package provides an `R` interface to data hosted by
-the [Bank for International Settlements](https://www.bis.org),
-specifically the [single-file data
+The `BIS` package provides an `R` interface to data hosted by the [Bank
+for International Settlements](https://www.bis.org), specifically the
+[single-file data
 sets](https://www.bis.org/statistics/full_data_sets.htm) available on
 the BIS homepage.
 
-## Install package
+## Installing the package
 
-The package can be installed from CRAN or Github.
+You can install the package from CRAN or GitHub.
 
 ``` r
 library(devtools)
@@ -23,14 +23,14 @@ install.packages("BIS")              # CRAN
 
 ## Example usage
 
-To import data, first load the package.
+To start using the package, load it into your R session.
 
 ``` r
 library("BIS")
 ```
 
-Next, run the `get_datasets()` function to obtain a list of available
-data sets.
+Next, retrieve a list of available data sets using the `get_datasets()`
+function.
 
 ``` r
 ds <- get_datasets()
@@ -38,57 +38,59 @@ head(ds, 20)
 ```
 
     ## # A tibble: 20 × 3
-    ##    name                                                          id        url  
-    ##    <chr>                                                         <chr>     <chr>
-    ##  1 Locational banking statistics                                 full_lbs… http…
-    ##  2 Consolidated banking statistics                               full_cbs… http…
-    ##  3 Debt securities statistics                                    full_deb… http…
-    ##  4 Credit to the non-financial sector                            full_tc_… http…
-    ##  5 Credit-to-GDP gaps                                            full_cre… http…
-    ##  6 Debt service ratios for the private non-financial sector      full_dsr… http…
-    ##  7 Global liquidity indicators                                   full_gli… http…
-    ##  8 Exchange-traded derivatives statistics                        full_xtd… http…
-    ##  9 OTC derivatives outstanding                                   full_otc… http…
-    ## 10 US dollar exchange rates (monthly, quarterly and annual)      full_xru… http…
-    ## 11 US dollar exchange rates (daily, horizontal time axis)        full_xru… http…
-    ## 12 US dollar exchange rates (daily, vertical time axis)          full_xru… http…
-    ## 13 Effective exchange rate indices (monthly)                     full_eer… http…
-    ## 14 Effective exchange rate indices (daily, horizontal time axis) full_eer… http…
-    ## 15 Effective exchange rate indices (daily, vertical time axis)   full_eer… http…
-    ## 16 Triennial Survey statistics on turnover                       full_der… http…
-    ## 17 Property prices: selected series                              full_spp… http…
-    ## 18 Property prices: long series                                  full_bis… http…
-    ## 19 Payments and financial market infrastructures statistics      full_bis… http…
-    ## 20 Consumer prices                                               full_lon… http…
+    ##    name                                                              id    url  
+    ##    <chr>                                                             <chr> <chr>
+    ##  1 Locational banking statistics (CSV, flat)10 Dec 2024              WS_L… http…
+    ##  2 Consolidated banking statistics (CSV, flat)10 Dec 2024            WS_C… http…
+    ##  3 Debt securities statistics (CSV, flat)10 Dec 2024                 WS_N… http…
+    ##  4 International debt securities (BIS-compiled) (CSV, flat)10 Dec 2… WS_D… http…
+    ##  5 Credit to the non-financial sector (CSV, flat)10 Dec 2024         WS_T… http…
+    ##  6 Credit-to-GDP gaps (CSV, flat)10 Dec 2024                         WS_C… http…
+    ##  7 Debt service ratios (CSV, flat)10 Dec 2024                        WS_D… http…
+    ##  8 Global liquidity indicators (CSV, flat)10 Dec 2024                WS_G… http…
+    ##  9 Exchange traded derivatives (CSV, flat)10 Dec 2024                WS_X… http…
+    ## 10 OTC derivatives statistics (CSV, flat)10 Dec 2024                 WS_O… http…
+    ## 11 Triennial survey (CSV, flat)5 Dec 2022                            WS_D… http…
+    ## 12 Selected residential property prices (CSV, flat)19 Dec 2024       WS_S… http…
+    ## 13 Detailed residential property prices (CSV, flat)19 Dec 2024       WS_D… http…
+    ## 14 Commercial property prices (CSV, flat)19 Dec 2024                 WS_C… http…
+    ## 15 Consumer prices index (CSV, flat)19 Dec 2024                      WS_L… http…
+    ## 16 Bilateral exchange rates (CSV, flat)19 Dec 2024                   WS_X… http…
+    ## 17 Effective exchange rates (CSV, flat)19 Dec 2024                   WS_E… http…
+    ## 18 Central bank total assets (CSV, flat)28 Nov 2024                  WS_C… http…
+    ## 19 Central bank policy rates (CSV, flat)19 Dec 2024                  WS_C… http…
+    ## 20 CPMI comparative tables type 1 (CSV, flat)                        WS_C… http…
 
 The `get_datasets()` function returns a
-[tibble](https://tibble.tidyverse.org/) data frame listing the available
-data sets. The column `url` can be used as input for the `get_bis()`
-function which downloads, parses and imports the corresponding data set.
+[tibble](https://tibble.tidyverse.org/) data frame listing available
+data sets. Use the `url` column as input for the `get_bis()` function to
+download, parse, and import the corresponding data set.
 
-To import monthly-frequency data on [central banks’ policy
-rates](https://www.bis.org/statistics/cbpol.htm), run the below.
+For example, to import monthly-frequency data on [central banks’ policy
+rates](https://www.bis.org/statistics/cbpol.htm), use the following
+code:
 
 ``` r
-rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
+rates <- get_bis(ds$url[ds$id == "WS_CBPOL_csv_flat"])
 head(rates)
 ```
 
-    ## # A tibble: 6 × 15
-    ##   freq  frequency ref_area reference_area time_format time_format.1 compilation 
-    ##   <chr> <chr>     <chr>    <chr>          <chr>       <chr>         <chr>       
-    ## 1 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## 2 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## 3 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## 4 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## 5 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## 6 M     Monthly   AR       Argentina      <NA>        <NA>          From 08 Aug…
-    ## # ℹ 8 more variables: decimals <chr>, decimals.1 <chr>, source_ref <chr>,
-    ## #   supp_info_breaks <chr>, title <chr>, series <chr>, date <chr>,
-    ## #   obs_value <dbl>
+    ## # A tibble: 6 × 18
+    ##   structure structure_id             action freq  ref_area time_period obs_value
+    ##   <chr>     <chr>                    <chr>  <chr> <chr>    <chr>           <dbl>
+    ## 1 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-01           1.5
+    ## 2 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-02           1.5
+    ## 3 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-03           1.5
+    ## 4 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-04           1.5
+    ## 5 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-05           1.5
+    ## 6 dataflow  BIS:WS_CBPOL(1.0): Cent… I      M: M… CH: Swi… 1946-06           1.5
+    ## # ℹ 11 more variables: unit_measure <chr>, unit_mult <chr>, time_format <chr>,
+    ## #   compilation <chr>, decimals <chr>, source_ref <chr>,
+    ## #   supp_info_breaks <chr>, title <chr>, obs_status <chr>, obs_conf <chr>,
+    ## #   obs_pre_break <chr>
 
-To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the
-below.
+To plot the data with [ggplot2](https://ggplot2.tidyverse.org), run the
+following:
 
 ``` r
 library("dplyr")
@@ -96,51 +98,61 @@ library("ggplot2")
 library("zoo")
 
 rates_plot <- subset(rates, ref_area %in% c("US", "XM", "JP", "GB", "CH", "CA"))
-rates_plot <- mutate(rates_plot, date = as.Date(as.yearmon(date, format = "%Y-%m")))
+rates_plot <- subset(rates, ref_area %in% c("US: United States",
+                                            "XM: Euro area",
+                                            "JP: Japan",
+                                            "GB: United Kingdom",
+                                            "CH: Switzerland",
+                                            "CA: Canada"))
+rates_plot <- mutate(rates_plot, time_period =
+                       as.Date(as.yearmon(time_period, format = "%Y-%m")))
 
-ggplot(rates_plot, aes(date, obs_value, color = reference_area)) +
+ggplot(rates_plot, aes(time_period, obs_value, color = ref_area)) +
   geom_line(show.legend = FALSE) +
-  facet_wrap(~reference_area) +
+  facet_wrap(~ref_area) +
   labs(title = "Central bank policy rates",
        subtitle = "% per annum", x = NULL, y = NULL)
 ```
 
 ![](README_files/figure-gfm/plot-1.png)<!-- -->
 
-Note that BIS data sets come with a number of different time formats.
-The [zoo](https://cran.r-project.org/package=zoo) package
-(e.g. `as.yearmon()`) should be able to parse most formats.
+Note that BIS data sets use various time formats. The
+[zoo](https://cran.r-project.org/package=zoo) package (e.g.,
+`as.yearmon()`) can handle most of these formats.
 
-## Large data sets
+## Reading locally stored files
 
-Large data sets (e.g. the Locational banking statistics and Debt
-securities statistics) may cause `get_bis()` to fail if the amount of
-available memory is insufficient for executing a required pivot
-operation. As a workaround, users may wish to set `auto_pivot = FALSE`
-when calling `get_bis()`, then subset the data and run
-`pivot_longer_bis()` manually.
+In some cases, the BIS homepage may only be accessible through a web
+browser, preventing the programmatic retrieval of data sets directly
+within R. When this occurs, users can manually download the files and
+use the `read_bis()` function to parse them.
+
+To read a locally stored CSV file, use the following code:
 
 ``` r
-options(timeout = 600)
-lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-lbs <- subset(lbs, l_parent_cty %in% c("US", "DE", "JP"))
-lbs <- pivot_longer_bis(lbs)
+df <- read_bis("WS_CBPOL_csv_flat.csv")
 ```
 
-## Retrieve individual data series
+To read a locally stored ZIP file, use this code:
+
+``` r
+df <- read_bis(.unzip_file("WS_CBPOL_csv_flat.zip"))
+```
+
+## Retrieving individual data series
 
 To retrieve individual data series instead of full data sets, consider
 using the BIS [SDMX RESTful API](https://stats.bis.org/api-doc/v1/#/).
-The [rsdmx R package](https://cran.r-project.org/package=rsdmx) is able
-to process SDMX data within R. The latest rsdmx [development
-version](https://github.com/opensdmx/rsdmx) contains a BIS connector
-that streamlines the process.
+The [rsdmx R package](https://cran.r-project.org/package=rsdmx) supports
+processing SDMX data in R. The latest [development
+version](https://github.com/opensdmx/rsdmx) of `rsdmx` includes a BIS
+connector to streamline the process.
 
 ## Note
 
-This package is in no way officially related to or endorsed by the [Bank
-for International Settlements](https://www.bis.org/). It’s based on a
+This package is neither officially related to nor endorsed by the [Bank
+for International Settlements](https://www.bis.org/). It is based on a
 fork of
 [CC0](https://cran.r-project.org/src/contrib/Archive/BIS/)-licensed
-[code by expersso](https://github.com/expersso/BIS). Please don’t abuse
-the BIS’s servers with unnecessary calls.
+[code by expersso](https://github.com/expersso/BIS). Please avoid
+overloading the BIS servers with unnecessary requests.

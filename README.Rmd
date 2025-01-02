@@ -8,11 +8,11 @@ output:
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/BIS)](http://cran.r-project.org/package=BIS) [![Cranlogs Downloads](http://cranlogs.r-pkg.org/badges/grand-total/BIS)](http://cran.r-project.org/package=BIS)
 
-The `BIS` package package provides an `R` interface to data hosted by the [Bank for International Settlements](https://www.bis.org), specifically the [single-file data sets](https://www.bis.org/statistics/full_data_sets.htm) available on the BIS homepage.
+The `BIS` package provides an `R` interface to data hosted by the [Bank for International Settlements](https://www.bis.org), specifically the [single-file data sets](https://www.bis.org/statistics/full_data_sets.htm) available on the BIS homepage.
 
-## Install package
+## Installing the package
 
-The package can be installed from CRAN or Github.
+You can install the package from CRAN or GitHub.
 
 ```{r install, eval=FALSE, message=FALSE, warning=FALSE}
 library(devtools)
@@ -22,29 +22,29 @@ install.packages("BIS")              # CRAN
 
 ## Example usage
 
-To import data, first load the package.
+To start using the package, load it into your R session.
 
 ```{r loading, message=FALSE, warning=FALSE}
 library("BIS")
 ```
 
-Next, run the `get_datasets()` function to obtain a list of available data sets.
+Next, retrieve a list of available data sets using the `get_datasets()` function.
 
 ```{r datasets, message=FALSE, warning=FALSE}
 ds <- get_datasets()
 head(ds, 20)
 ```
 
-The `get_datasets()` function returns a [tibble](https://tibble.tidyverse.org/) data frame listing the available data sets. The column `url` can be used as input for the `get_bis()` function which downloads, parses and imports the corresponding data set.
+The `get_datasets()` function returns a [tibble](https://tibble.tidyverse.org/) data frame listing available data sets. Use the `url` column as input for the `get_bis()` function to download, parse, and import the corresponding data set.
 
-To import monthly-frequency data on [central banks' policy rates](https://www.bis.org/statistics/cbpol.htm), run the below.
+For example, to import monthly-frequency data on [central banks' policy rates](https://www.bis.org/statistics/cbpol.htm), use the following code:
 
 ```{r rates, message=FALSE, warning=FALSE}
-rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
+rates <- get_bis(ds$url[ds$id == "WS_CBPOL_csv_flat"])
 head(rates)
 ```
 
-To plot the data using [ggplot2](https://ggplot2.tidyverse.org), run the below.
+To plot the data with [ggplot2](https://ggplot2.tidyverse.org), run the following:
 
 ```{r plot, message=FALSE, warning=FALSE}
 library("dplyr")
@@ -52,32 +52,44 @@ library("ggplot2")
 library("zoo")
 
 rates_plot <- subset(rates, ref_area %in% c("US", "XM", "JP", "GB", "CH", "CA"))
-rates_plot <- mutate(rates_plot, date = as.Date(as.yearmon(date, format = "%Y-%m")))
+rates_plot <- subset(rates, ref_area %in% c("US: United States",
+                                            "XM: Euro area",
+                                            "JP: Japan",
+                                            "GB: United Kingdom",
+                                            "CH: Switzerland",
+                                            "CA: Canada"))
+rates_plot <- mutate(rates_plot, time_period =
+                       as.Date(as.yearmon(time_period, format = "%Y-%m")))
 
-ggplot(rates_plot, aes(date, obs_value, color = reference_area)) +
+ggplot(rates_plot, aes(time_period, obs_value, color = ref_area)) +
   geom_line(show.legend = FALSE) +
-  facet_wrap(~reference_area) +
+  facet_wrap(~ref_area) +
   labs(title = "Central bank policy rates",
        subtitle = "% per annum", x = NULL, y = NULL)
 ```
 
-Note that BIS data sets come with a number of different time formats. The [zoo](https://cran.r-project.org/package=zoo) package (e.g. `as.yearmon()`) should be able to parse most formats.
+Note that BIS data sets use various time formats. The [zoo](https://cran.r-project.org/package=zoo) package (e.g., `as.yearmon()`) can handle most of these formats.
 
-## Large data sets
+## Reading locally stored files
 
-Large data sets (e.g. the Locational banking statistics and Debt securities statistics) may cause `get_bis()` to fail if the amount of available memory is insufficient for executing a required pivot operation. As a workaround, users may wish to set `auto_pivot = FALSE` when calling `get_bis()`, then subset the data and run `pivot_longer_bis()` manually.
+In some cases, the BIS homepage may only be accessible through a web browser, preventing the programmatic retrieval of data sets directly within R. When this occurs, users can manually download the files and use the `read_bis()` function to parse them.
 
-```{r nopivot, eval=FALSE, message=FALSE, warning=FALSE}
-options(timeout = 600)
-lbs <- get_bis(ds$url[(ds$id == "full_lbs_d_pub_csv")], auto_pivot = FALSE)
-lbs <- subset(lbs, l_parent_cty %in% c("US", "DE", "JP"))
-lbs <- pivot_longer_bis(lbs)
+To read a locally stored CSV file, use the following code:
+
+```{r localcsv, eval=FALSE, message=FALSE, warning=FALSE}
+df <- read_bis("WS_CBPOL_csv_flat.csv")
 ```
 
-## Retrieve individual data series
+To read a locally stored ZIP file, use this code:
 
-To retrieve individual data series instead of full data sets, consider using the BIS [SDMX RESTful API](https://stats.bis.org/api-doc/v1/#/). The [rsdmx R package](https://cran.r-project.org/package=rsdmx) is able to process SDMX data within R. The latest rsdmx [development version](https://github.com/opensdmx/rsdmx) contains a BIS connector that streamlines the process.
+```{r localzip, eval=FALSE, message=FALSE, warning=FALSE}
+df <- read_bis(.unzip_file("WS_CBPOL_csv_flat.zip"))
+```
+
+## Retrieving individual data series
+
+To retrieve individual data series instead of full data sets, consider using the BIS [SDMX RESTful API](https://stats.bis.org/api-doc/v1/#/). The [rsdmx R package](https://cran.r-project.org/package=rsdmx) supports processing SDMX data in R. The latest [development version](https://github.com/opensdmx/rsdmx) of `rsdmx` includes a BIS connector to streamline the process.
 
 ## Note
 
-This package is in no way officially related to or endorsed by the [Bank for International Settlements](https://www.bis.org/). It's based on a fork of [CC0](https://cran.r-project.org/src/contrib/Archive/BIS/)-licensed [code by expersso](https://github.com/expersso/BIS). Please don't abuse the BIS's servers with unnecessary calls.
+This package is neither officially related to nor endorsed by the [Bank for International Settlements](https://www.bis.org/). It is based on a fork of [CC0](https://cran.r-project.org/src/contrib/Archive/BIS/)-licensed [code by expersso](https://github.com/expersso/BIS). Please avoid overloading the BIS servers with unnecessary requests.

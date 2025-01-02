@@ -2,9 +2,9 @@
 % Please edit documentation in R/BIS.R
 \name{get_datasets}
 \alias{get_datasets}
-\title{Download and parse a list of available BIS data sets}
+\title{Retrieve a list of available BIS data sets}
 \usage{
-get_datasets(base_url = "https://www.bis.org/statistics/full_data_sets.htm")
+get_datasets(base_url = "https://data.bis.org/bulkdownload")
 }
 \arguments{
 \item{base_url}{Character. URL of the BIS's homepage listing single file data
@@ -14,7 +14,7 @@ sets for download (optional).}
 A tibble data frame.
 }
 \description{
-Download and parse a list of available BIS data sets
+Retrieve a list of available BIS data sets
 }
 \examples{
 \donttest{

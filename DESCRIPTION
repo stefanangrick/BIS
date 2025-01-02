@@ -1,11 +1,11 @@
 Package: BIS
 Type: Package
 Title: Programmatic Access to Bank for International Settlements Data
-Version: 0.3.3
+Version: 0.4
 Authors@R: c(
-  person("Eric", "Persson", role = c("aut")),
   person("Stefan", "Angrick", email = "contact@stefanangrick.net",
-    role = c("cre"))
+    role = c("aut", "cre")),
+  person("Eric", "Persson", role = c("aut"))
   )
 Description: Provides an interface to data provided by the Bank for
   International Settlements <https://www.bis.org>, allowing for programmatic
@@ -21,10 +21,8 @@ Suggests:
 Imports:
     dplyr,
     readr,
-    tidyr,
-    tidyselect,
     rvest,
     xml2
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2

@@ -4,35 +4,24 @@
 \alias{get_bis}
 \title{Download and parse a BIS data set}
 \usage{
-get_bis(item_url, auto_pivot = TRUE, ...)
+get_bis(item_url, ...)
 }
 \arguments{
 \item{item_url}{Character. URL of the data set to be imported (usually
-obtained through \code{get_datasets()}).}
-
-\item{auto_pivot}{Logical. Controls whether source data set is converted to
-long format. Set this to \code{FALSE} to disable conversion (default: TRUE).}
+obtained via \code{get_datasets()}).}
 
 \item{...}{Arguments passed to \code{download.file()} (e.g.
 \code{quiet = TRUE}).}
 }
 \value{
-A tibble data frame, or a list of tibble data frames in cases where
-the source zip file contains multiple csv files.
+A tibble data frame.
 }
 \description{
 Download and parse a BIS data set
 }
-\details{
-Large data sets may cause \code{get_bis()} to fail if the amount of
-available memory is insufficient for executing a required pivot operation. As
-a workaround, users may wish to set \code{auto_pivot = FALSE} when calling
-\code{get_bis()}, then subset the data and run \code{pivot_longer_bis()}
-manually. See the vignette for detail.
-}
 \examples{
 \donttest{
-ds    <- get_datasets()
-rates <- get_bis(ds$url[ds$id == "full_cbpol_m_csv"])
+ds <- get_datasets()
+df <- get_bis(ds$url[ds$id == "WS_CBPOL_csv_flat"])
 }
 }
